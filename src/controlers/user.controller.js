@@ -3,6 +3,7 @@ import { apiError } from "../utils/apiError.js"
 import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { apiResponse } from "../utils/apiResponse.js";
+import fs from "fs"
 
 const registerUser = asyncHandler(async (req, res) => {
     //get user details from frontend
@@ -26,27 +27,29 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
     if (existedUser) {
+        if (req.files.avatar !== undefined) {
+            const deleteAvatarFile = req.files?.avatar[0]?.path
+            fs.unlinkSync(deleteAvatarFile)
+        }
         throw new apiError(409, "User with email or username already existed")
     }
-    console.log(req.files)
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    //const coverImageLocalPath = req.files?.coverImage[0]?.path;
-    // let coverImageLocalPath;
-    // if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage > 0) {
-    //     coverImageLocalPath = req.files.coverImage[0].path;
-    // }
+    // console.log(req.files.avatar[0])
 
-    if (!avatarLocalPath) {
-        throw new apiError(400, "Avatar file is required")
+    if (req.files && Array.isArray(req.files.avatar) && req.files.avatar.length <= 0) {
+        throw new apiError(409, "Avatar file path is not available")
     }
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
-    // const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
+    if (req.files.avatar == undefined) {
+        throw new apiError(400, "Avatar file is undefined")
+    }
+    // console.log(avatarLocalPath)
+    // const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    const avatarLocalPath = req.files?.avatar[0]?.path
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
     if (!avatar) {
         throw new apiError(400, "Avatar file is required")
     }
-
     const user = await User.create({
         fullname,
         avatar: avatar.url,

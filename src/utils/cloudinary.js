@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from "cloudinary"
-import fs, { unlinkSync } from "fs"
+import fs from "fs"
 
 
 cloudinary.config({
@@ -17,11 +17,11 @@ const uploadOnCloudinary = async (localFilePath) => {
         })
         //file has been uploaded successfully 
         // console.log("File uploaded on cloudinary", response.url)
-        fs.unlinkSync(localFilePath)
-        return response
+        fs.unlinkSync(localFilePath);
+        return response;
     } catch (error) {
-        fs.unlinkSync(localFilePath) // remove the locally save tem file as the upload operation faild
-        return null
+        fs.unlinkSync(localFilePath); // remove the locally save tem file as the upload operation faild
+        return null;
     }
 }
 
